@@ -1,0 +1,442 @@
+{
+  "name": "Whatsapp RAG AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are the AsifDevX Virtual Support Assistant, designed to help users with questions and support related to our services and projects. Use the retrieved context from the knowledge base to provide accurate, clear, and concise answers. Apply reasoning and common sense when needed, but always stay aligned with verified information. Keep responses professional, friendly, and easy to understand. If the answer isn’t available or uncertain, reply with: ‘One of our team members will assist you on this."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1296,
+        80
+      ],
+      "id": "c8d247f3-1686-445d-9cd4-efef9543ebe4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        80
+      ],
+      "id": "11231b6a-b70f-4d91-82ef-9703f7d0e38b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n    const data = item.json;\n    let content = \"\";\n\n    if (data.Question && data.Answer) {\n        // FAQ\n        content = `${data.Answer}`;\n    } else if (data['Product Name'] && data.Description) {\n        // Product\n        content = `Product\\nCategory: ${data.Category || \"General\"}\\nName: ${data['Product Name']}\\nDescription: ${data.Description}\\nSize: ${data.Size || \"N/A\"}\\nPrice: ${data.Price || \"N/A\"}`;\n    } else {\n        // Fallback\n        content = `Other Data\\n${JSON.stringify(data)}`;\n    }\n\n    return {\n        json: {\n            values: [],        // embedding node will fill this\n            content: content   // EVERYTHING is now vectorized\n        }\n    };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        80
+      ],
+      "id": "fa7e7eff-bba5-466a-bfe3-34a9568f718a",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        288
+      ],
+      "id": "ca027df2-5f27-4656-930e-ed141c4341c6",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "content": "## Knowledge Base to Vector",
+        "height": 448,
+        "width": 992
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "2e0e9385-55d2-49e9-875f-3d92802746ac",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw",
+          "mode": "list",
+          "cachedResultName": "FAQs for AsifDevX",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        80
+      ],
+      "id": "9f122d35-228a-49e1-9ea6-d2ec50735d16",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ry17PtibH8SO9ceO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent",
+        "height": 656,
+        "width": 832,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1024,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "2b285873-046d-43ac-bf7e-0782d4bc8b6d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        288
+      ],
+      "id": "599bf29e-7b41-401c-8f97-b55edd85f1d1",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ydPiPlefzZRWPIk9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        320
+      ],
+      "id": "28692625-0ae5-455b-b0c8-711985fd45fc",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ydPiPlefzZRWPIk9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        512
+      ],
+      "id": "f9678666-c614-4b76-bd4c-373f46caf40c",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ydPiPlefzZRWPIk9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        96
+      ],
+      "id": "dcf7a941-6a51-4f7c-b9d3-ca01c3b1f156",
+      "name": "WhatsApp Trigger",
+      "webhookId": "5da7e36f-12f1-4fff-b0bb-72beb05207e9",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "iyiXGU5Ukldk1gXy",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "887492814437979",
+        "recipientPhoneNumber": "+92 349 1211411",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        96
+      ],
+      "id": "046d0a9e-721a-4c8a-a424-da8e7c09516e",
+      "name": "Send message",
+      "webhookId": "b9f02d7f-f5b4-4157-87e8-183f84817a25",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "apzL4XXcRf5W4GVO",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        288
+      ],
+      "id": "caa8aca6-f133-4048-8c5a-0591b7dc3c50",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "KSQsK6q0DwLzgswr",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        80
+      ],
+      "id": "7a9b000a-df2d-4de3-b220-4317a5cb29d8",
+      "name": "Knowledge Base",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Ke2mcUkudi8BwcUo",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Fetch all FAQs and their corresponding answers from this tool, then automatically match and respond to customer questions with the most accurate and relevant FAQ answer.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1520,
+        304
+      ],
+      "id": "70411754-476e-4d50-b5ea-f4a07b82f478",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Ke2mcUkudi8BwcUo",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Knowledge Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Knowledge Base",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2f863da3-2b5c-4ee4-8115-254d6d004d2f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b29318b386f0fe1286d5b846154f11e2fdefddafc018b5c1ea1e726715060777"
+  },
+  "id": "t29b6HhW3m9FR4T0",
+  "tags": []
+}
