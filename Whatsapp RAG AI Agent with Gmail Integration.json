@@ -1,0 +1,1026 @@
+{
+  "name": "Whatsapp RAG AI Agent with Gmail Integration",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are the AsifDevX Virtual Support Assistant, designed to help users with questions and support related to our services and projects. Use the retrieved context from the knowledge base to provide accurate, clear, and concise answers. Apply reasoning and common sense when needed, but always stay aligned with verified information. Keep responses professional, friendly, and easy to understand. If the answer isn’t available or uncertain, reply with: ‘One of our team members will assist you on this."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1448,
+        344
+      ],
+      "id": "2067a93f-4946-485b-bf32-af7cecc6d33c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        16
+      ],
+      "id": "e1087b4c-3be5-4831-a4b1-db9e96b86632",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n    const data = item.json;\n    let content = \"\";\n\n    if (data.Question && data.Answer) {\n        // FAQ\n        content = `${data.Answer}`;\n    } else if (data['Product Name'] && data.Description) {\n        // Product\n        content = `Product\\nCategory: ${data.Category || \"General\"}\\nName: ${data['Product Name']}\\nDescription: ${data.Description}\\nSize: ${data.Size || \"N/A\"}\\nPrice: ${data.Price || \"N/A\"}`;\n    } else {\n        // Fallback\n        content = `Other Data\\n${JSON.stringify(data)}`;\n    }\n\n    return {\n        json: {\n            values: [],        // embedding node will fill this\n            content: content   // EVERYTHING is now vectorized\n        }\n    };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        16
+      ],
+      "id": "40706848-7300-4472-a81b-4bf10f999eee",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        240
+      ],
+      "id": "70df0a06-2afa-4b9a-b83d-29ee5f35c67e",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "content": "## Knowledge Base to Vector",
+        "height": 528,
+        "width": 1360
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1960,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "7004d9f0-595c-4981-989c-d10b026b43d6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw",
+          "mode": "list",
+          "cachedResultName": "FAQs for AsifDevX",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1504,
+        16
+      ],
+      "id": "6eb47b68-5bed-4474-a47f-f8d6de8d2b28",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q3N8k659Jac3ltyL",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent",
+        "height": 1040,
+        "width": 2768,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1968,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "5be1f7d1-def8-4d5e-a618-530c6aded101",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1048,
+        240
+      ],
+      "id": "a8e05484-5ac3-4667-8749-7b2d7ace9e87",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "eFxcx1Y3vugQvZpF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1504,
+        568
+      ],
+      "id": "19c00cb6-a5ae-4aee-8276-8f7984eb2147",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "eFxcx1Y3vugQvZpF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1168,
+        776
+      ],
+      "id": "208a78b2-a2de-417e-b1c0-9a3b45e3f3a3",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "eFxcx1Y3vugQvZpF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        552
+      ],
+      "id": "2de81854-3d7b-4c28-8898-04adc4e88fcd",
+      "name": "WhatsApp Trigger",
+      "webhookId": "5da7e36f-12f1-4fff-b0bb-72beb05207e9",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "EvcmXKqA1Nb5evii",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "887492814437979",
+        "recipientPhoneNumber": "+92 349 1211411",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        552
+      ],
+      "id": "7c390e56-4597-48d7-b094-d56fcf231d6d",
+      "name": "Send message",
+      "webhookId": "b9f02d7f-f5b4-4157-87e8-183f84817a25",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hRc84apLpTEUadoi",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1376,
+        568
+      ],
+      "id": "5d7d1c22-7c51-4fff-90a2-534f02770767",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "nNZ19mwAZwgepSHs",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -1056,
+        16
+      ],
+      "id": "e82978d2-9b98-4c82-97b8-2adc217ffbcc",
+      "name": "Knowledge Base",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VIiI3dZebb6bkfjb",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Fetch all FAQs and their corresponding answers from this tool, then automatically match and respond to customer questions with the most accurate and relevant FAQ answer.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -1248,
+        568
+      ],
+      "id": "e371957d-5876-4635-ad62-6f18799e7005",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VIiI3dZebb6bkfjb",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "source",
+              "value": "AI",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "logTimestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "27f6af4e-5414-40e1-a32b-d8e79d8fb138",
+      "name": "Prepare Chat Log Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        552
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = $input.item.json.output || '';\nlet confidence = 100;\n\nif (aiResponse.includes('One of our team members will assist you') || aiResponse.includes('not available') || aiResponse.includes('uncertain')) {\n  confidence = 50;\n} else if (aiResponse.length < 50) {\n  confidence = 60;\n} else if (aiResponse.length < 100) {\n  confidence = 75;\n}\n\nreturn {\n  ...($input.item.json),\n  confidenceScore: confidence\n};"
+      },
+      "id": "8191a7c6-b8e0-4077-87a6-abbb45df2956",
+      "name": "Calculate Confidence Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        552
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.confidenceScore }}",
+              "rightValue": "70",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "be15c241-2c59-4c7d-ac7f-6db8d1fb3629",
+      "name": "Check AI Confidence",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        552
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "muhammad.asif.devx@gmail.com",
+        "subject": "=💬 WhatsApp Chat Log - {{ $('Merge AI Response Data').item.json.clientName }}",
+        "message": "=<h2>WhatsApp Chat Log</h2>\n<p><strong>Client Name:</strong> {{ $('Merge AI Response Data').item.json.clientName }}</p>\n<p><strong>Phone Number:</strong> {{ $('Merge AI Response Data').item.json.phoneNumber }}</p>\n<p><strong>Client Message:</strong> {{ $('Merge AI Response Data').item.json.clientMessage }}</p>\n<p><strong>AI Response:</strong> {{ $('Merge AI Response Data').item.json.aiResponse }}</p>\n<p><strong>Confidence Score:</strong> {{ $('Calculate Confidence Score').item.json.confidenceScore }}%</p>\n<p><strong>Timestamp:</strong> {{ $('Merge AI Response Data').item.json.timestamp }}</p>",
+        "options": {}
+      },
+      "id": "949a5e40-661d-4af4-b2e3-2605006e0f04",
+      "name": "Send Chat Notification Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        456
+      ],
+      "webhookId": "42811b1d-7ff4-47af-8c12-52bd8df8cee4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y4ANmllzfy5Px9dx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "muhammad.asif.devx@gmail.com",
+        "subject": "⚠️ AI Agent Stuck – Human Action Required",
+        "message": "=<h2>⚠️ AI Agent Stuck – Human Action Required</h2>\n<p>The AI agent has detected a low confidence response and requires human intervention.</p>\n\n<h3>Client Details:</h3>\n<ul>\n  <li><strong>WhatsApp ID:</strong> {{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}</li>\n  <li><strong>Contact Name:</strong> {{ $('WhatsApp Trigger').item.json.contacts[0].profile.name }}</li>\n  <li><strong>Phone Number:</strong> {{ $('WhatsApp Trigger').item.json.messages[0].from }}</li>\n</ul>\n\n<h3>Original Message:</h3>\n<p>{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}</p>\n\n<h3>AI Response:</h3>\n<p>{{ $('AI Agent').item.json.output }}</p>\n\n<h3>Confidence Score:</h3>\n<p>{{ $('Calculate Confidence Score').item.json.confidenceScore }}%</p>\n\n<p><strong>Action Required:</strong> Please review and respond to this customer inquiry manually by replying to this email.</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "109e05ea-463e-4818-8fc1-3e5885d65840",
+      "name": "Send AI Stuck Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        648
+      ],
+      "webhookId": "aae79aa8-2a4f-43d3-8e54-33b24372443a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y4ANmllzfy5Px9dx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw",
+          "mode": "list",
+          "cachedResultName": "FAQs for AsifDevX",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kptVYkcMMQKlsonqMqTI63rrOKcSr0Km1AvWBi-3ICw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "36d6c6bb-a79e-4459-94cf-79b85e11e29e",
+      "name": "Log Chat to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        552
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q3N8k659Jac3ltyL",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "subject:(\"WhatsApp Chat Log\" OR \"AI Agent Stuck\")",
+          "sender": "muhammad.asif.devx@gmail.com"
+        }
+      },
+      "id": "aaebbf8d-01f2-45f9-b024-4ac2942337e1",
+      "name": "Gmail Reply Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1728,
+        984
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y4ANmllzfy5Px9dx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const subject = $input.item.json.subject || '';\nconst body = $input.item.json.textPlain || $input.item.json.textHtml || '';\n\nconst phoneMatch = subject.match(/\\+?\\d{10,15}/);\nconst clientNumber = phoneMatch ? phoneMatch[0] : '';\n\nreturn {\n  json: {\n    clientNumber: clientNumber,\n    replyMessage: body,\n    timestamp: $now.toISO()\n  }\n};"
+      },
+      "id": "84352701-a476-45d9-8c80-60d0ddbe1c7f",
+      "name": "Extract Reply Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1504,
+        984
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "887492814437979",
+        "recipientPhoneNumber": "={{ $json.clientNumber }}",
+        "textBody": "={{ $json.replyMessage }}",
+        "additionalFields": {}
+      },
+      "id": "653905ed-602b-4781-a739-d73597b6554a",
+      "name": "Send Manual Reply to WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -1280,
+        984
+      ],
+      "webhookId": "369c62eb-850b-44a7-9b10-f7d124e7121d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hRc84apLpTEUadoi",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Chat Logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.toISO() }}",
+            "Client Number": "={{ $json.clientNumber }}",
+            "Message": "={{ $json.reply }}",
+            "Source": "Human"
+          },
+          "matchingColumns": [
+            "Client Number"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Client Number",
+              "displayName": "Client Number",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "323258cf-00f0-44dc-9cad-c18d94d58cce",
+      "name": "Log Manual Reply to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1056,
+        984
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q3N8k659Jac3ltyL",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "90b88b22-35a1-4519-a4f1-8c2ab7cdf0c2",
+      "name": "Daily Summary Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1728,
+        1208
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Chat Logs"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Timestamp",
+              "lookupValue": "={{ $now.minus({ days: 1 }).toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1de1dfb8-b5ea-4d9b-bde5-9513c0d8409f",
+      "name": "Read Daily Chat Logs",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1504,
+        1208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q3N8k659Jac3ltyL",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst totalChats = items.length;\nconst aiChats = items.filter(i => i.json.Source === 'AI').length;\nconst humanChats = items.filter(i => i.json.Source === 'Human').length;\nconst avgConfidence = items.filter(i => i.json['Confidence Score']).reduce((sum, i) => sum + parseFloat(i.json['Confidence Score'] || 0), 0) / aiChats || 0;\nconst aiSuccessRate = ((aiChats / totalChats) * 100).toFixed(2);\n\nreturn [{\n  json: {\n    totalChats,\n    aiChats,\n    humanChats,\n    avgConfidence: avgConfidence.toFixed(2),\n    aiSuccessRate,\n    date: $now.toFormat('yyyy-MM-dd')\n  }\n}];"
+      },
+      "id": "416a5dd4-4546-413d-b916-df9418a96f0b",
+      "name": "Calculate Daily Stats",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        1208
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "muhammad.asif.devx@gmail.com",
+        "subject": "=📊 Daily WhatsApp AI Agent Summary - {{ $json.date }}",
+        "message": "=<h2>📊 Daily WhatsApp AI Agent Summary</h2>\n<p><strong>Date:</strong> {{ $json.date }}</p>\n<hr>\n<h3>📈 Key Metrics</h3>\n<ul>\n  <li><strong>Total Chats:</strong> {{ $json.totalChats }}</li>\n  <li><strong>AI Success Rate:</strong> {{ $json.aiSuccessRate }}%</li>\n  <li><strong>Human Interventions:</strong> {{ $json.humanInterventions }}</li>\n  <li><strong>Average Confidence Score:</strong> {{ $json.avgConfidenceScore }}%</li>\n</ul>\n<hr>\n<p>This is an automated summary generated by your WhatsApp AI Agent workflow.</p>",
+        "options": {}
+      },
+      "id": "6cd33ddd-4b1a-4403-9ffd-a3cd386f51bd",
+      "name": "Send Daily Summary Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        1208
+      ],
+      "webhookId": "e0a4732e-f0cd-4344-8e77-80625cae37ba",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y4ANmllzfy5Px9dx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "clientName",
+              "value": "={{ $('WhatsApp Trigger').item.json.contacts[0].profile.name }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "clientNumber",
+              "value": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "clientMessage",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "aiResponse",
+              "value": "={{ $('Send message').item.json.messages[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "21fbcf87-88b0-4e22-8faa-4eb92d989770",
+      "name": "Merge AI Response Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        552
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Knowledge Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Knowledge Base",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Response Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge AI Response Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Confidence Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Confidence Score": {
+      "main": [
+        [
+          {
+            "node": "Check AI Confidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check AI Confidence": {
+      "main": [
+        [
+          {
+            "node": "Send Chat Notification Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send AI Stuck Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Chat Notification Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Chat Log Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send AI Stuck Alert": {
+      "main": [
+        [
+          {
+            "node": "Prepare Chat Log Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Chat Log Data": {
+      "main": [
+        [
+          {
+            "node": "Log Chat to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Reply Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Reply Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Reply Details": {
+      "main": [
+        [
+          {
+            "node": "Send Manual Reply to WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Manual Reply to WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Log Manual Reply to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Summary Schedule": {
+      "main": [
+        [
+          {
+            "node": "Read Daily Chat Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Daily Chat Logs": {
+      "main": [
+        [
+          {
+            "node": "Calculate Daily Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Daily Stats": {
+      "main": [
+        [
+          {
+            "node": "Send Daily Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7f684276-89e5-444a-8e27-a0a38ee01e6d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6964c6148c5e4bfd37c478a0db8669dcd461d7070d2b7292c47638e30a1a1886"
+  },
+  "id": "PUbHTJrPvFzmBvN4",
+  "tags": []
+}
